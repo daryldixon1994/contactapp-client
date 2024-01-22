@@ -3,40 +3,34 @@ import { Button, Form, Checkbox } from "semantic-ui-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { MessageHeader, Message } from "semantic-ui-react";
-function Register() {
+function Login() {
   const navigate = useNavigate();
   const [showPass, setShowPass] = useState(false);
-  const [registerData, setRegisterData] = useState({});
-  const [message, setMessage] = useState("");
+  const [loginData, setLoginData] = useState({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const handleRegister = () => {
+  const handleLogin = () => {
     setLoading(true);
     axios
       .post(
-        "https://contactapp-api-uas9.onrender.com/api/user/register",
-        registerData
+        "https://contactapp-api-uas9.onrender.com/api/admin/login",
+        loginData
       )
       .then((res) => {
-        console.log(res);
-        setLoading(false);
-        setMessage("Your account was created successfully");
+        localStorage.setItem("token", res.data.data.token);
+        localStorage.setItem("isAdmin", res.data.data.isAdmin);
         setTimeout(() => {
-          navigate("/login");
-        }, 3000);
+          setLoading(false);
+          navigate("/dashboard");
+        }, 2000);
       })
       .catch((err) => {
         console.dir(err);
         setLoading(false);
-        if (err.response.data.error.email) {
-          setError(err.response.data.error.email.message);
-        } else {
-          setError(err.response.data.error);
-        }
+        setError(err.response.data.error);
         setTimeout(() => {
           setError("");
-        }, 10000);
-        console.dir(err);
+        }, 8000);
       });
   };
   return (
@@ -45,11 +39,10 @@ function Register() {
         size="large"
         className="border-2 border-slate-300 md:w-[60%] md:m-auto p-12 rounded-2xl"
         onChange={(e) => {
-          setRegisterData({ ...registerData, [e.target.name]: e.target.value });
+          setLoginData({ ...loginData, [e.target.name]: e.target.value });
         }}
       >
-        <h1>Register.</h1>
-        <Form.Input type="text" name="userName" placeholder="Username" />
+        <h1>Login.</h1>
         <Form.Input type="email" name="email" placeholder="Email" />
         <Form.Input
           type={showPass ? "text" : "password"}
@@ -70,23 +63,18 @@ function Register() {
             <p>{error}</p>
           </Message>
         )}
-        {message && (
-          <Message positive>
-            <MessageHeader>{message} 🥳</MessageHeader>
-            <p>You wil be redirect to the Login page</p>
-          </Message>
-        )}
+
         <Button
           onClick={() => {
-            handleRegister();
+            handleLogin();
           }}
           loading={loading}
         >
-          Register
+          Login
         </Button>
       </Form>
     </div>
   );
 }
 
-export default Register;
+export default Login;
